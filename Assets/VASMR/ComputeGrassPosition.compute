@@ -1,0 +1,24 @@
+﻿#pragma kernel SamplePos
+
+#include "Packages/jp.keijiro.noiseshader/Shader/SimplexNoise3D.hlsl"
+
+AppendStructuredBuffer<float3> _PositionBuffer;
+
+float2 _size;
+float2 _step;
+
+// Noise param
+float _scale;
+float3 _offset;
+float _threshold;
+
+[numthreads(8,8,1)]
+void SamplePos (uint3 id : SV_DispatchThreadID)
+{
+    float2 p = (_step * id.xy) - (_size * .5);
+
+    float n = snoise(float3(p.x, 0, p.y) * _scale + _offset);
+    if(n > _threshold){
+        _PositionBuffer.Append(float3(p.x, max(n, .05), p.y));
+    }
+}
